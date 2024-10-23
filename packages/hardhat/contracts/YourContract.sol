@@ -1,87 +1,55 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-// Useful for debugging. Remove when deploying to a live network.
 import "hardhat/console.sol";
 
-// Use openzeppelin to inherit battle-tested implementations (ERC20, ERC721, etc)
-// import "@openzeppelin/contracts/access/Ownable.sol";
-
-/**
- * A smart contract that allows changing a state variable of the contract and tracking the changes
- * It also allows the owner to withdraw the Ether in the contract
- * @author BuidlGuidl
- */
 contract YourContract {
-	// State Variables
-	address public immutable owner;
-	string public greeting = "Building Unstoppable Apps!!!";
-	bool public premium = false;
-	uint256 public totalCounter = 0;
-	mapping(address => uint) public userGreetingCounter;
 
-	// Events: a way to emit log statements from smart contract that can be listened to by external parties
-	event GreetingChange(
-		address indexed greetingSetter,
-		string newGreeting,
-		bool premium,
-		uint256 value
-	);
-
-	// Constructor: Called once on contract deployment
-	// Check packages/hardhat/deploy/00_deploy_your_contract.ts
-	constructor(address _owner) {
-		owner = _owner;
+	enum Side {
+		Kamala,
+		Trump
 	}
 
-	// Modifier: used to define a set of rules that must be met before or after a function is executed
-	// Check the withdraw() function
-	modifier isOwner() {
-		// msg.sender: predefined variable that represents address of the account that called the current function
-		require(msg.sender == owner, "Not the Owner");
-		_;
+	struct Result {
+		Side winner;
+		Side loser;
 	}
 
-	/**
-	 * Function that allows anyone to change the state variable "greeting" of the contract and increase the counters
-	 *
-	 * @param _newGreeting (string memory) - new greeting to save on the contract
-	 */
-	function setGreeting(string memory _newGreeting) public payable {
-		// Print data to the hardhat chain console. Remove when deploying to a live network.
-		console.log(
-			"Setting new greeting '%s' from %s",
-			_newGreeting,
-			msg.sender
-		);
+	Result public result;
+	bool public electionFinished;
+	mapping (Side => uint) public betsPerCandidate;
+	mapping (address => mapping (Side => uint)) public betsPerGambler;
+	address public oracle;
 
-		// Change state variables
-		greeting = _newGreeting;
-		totalCounter += 1;
-		userGreetingCounter[msg.sender] += 1;
-
-		// msg.value: built-in global variable that represents the amount of ether sent with the transaction
-		if (msg.value > 0) {
-			premium = true;
-		} else {
-			premium = false;
-		}
-
-		// emit: keyword used to trigger an event
-		emit GreetingChange(msg.sender, _newGreeting, msg.value > 0, msg.value);
+	constructor (address _oracle) {
+		oracle = _oracle;
 	}
 
-	/**
-	 * Function that allows the owner to withdraw all the Ether in the contract
-	 * The function can only be called by the owner of the contract as defined by the isOwner modifier
-	 */
-	function withdraw() public isOwner {
-		(bool success, ) = owner.call{ value: address(this).balance }("");
-		require(success, "Failed to send Ether");
+	//function for placing bet
+	function bet (Side _side) external payable {
+		require(electionFinished == false, "Election already finished");
+		betsPerCandidate[_side] += msg.value;
+		betsPerGambler[msg.sender][_side] += msg.value;
 	}
 
-	/**
-	 * Function that allows the contract to receive ETH
-	 */
-	receive() external payable {}
+	//withdraw
+	function withdraw () external {
+		uint gamblerBet = betsPerGambler[msg.sender][result.winner];
+		require(gamblerBet > 0, "You do not have any bets to withdraw");
+		require(electionFinished == true, "Election not finished yet");
+		uint gain = gamblerBet + betsPerCandidate[result.loser] + gamblerBet / betsPerCandidate[result.winner];
+		betsPerGambler[msg.sender][Side.Kamala] = 0;
+		betsPerGambler[msg.sender][Side.Trump] = 0;
+		(bool success, ) = payable(msg.sender).call{value: gain}("");
+		require(success == true, "Failed to withdraw");
+	}
+
+	// Report
+	function report (Side _winner, Side _loser) external {
+		require(oracle == msg.sender, "Only oracle can report");
+		require(_winner != _loser, "Winner and loser cannot be the same");
+		result.winner = _winner;
+		result.loser = _loser;
+		electionFinished = true;
+	}
 }

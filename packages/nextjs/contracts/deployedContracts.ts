@@ -4,6 +4,151 @@
  */
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
-const deployedContracts = {} as const;
+const deployedContracts = {
+  31337: {
+    YourContract: {
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_oracle",
+              type: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          inputs: [
+            {
+              internalType: "enum YourContract.Side",
+              name: "_side",
+              type: "uint8",
+            },
+          ],
+          name: "bet",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "enum YourContract.Side",
+              name: "",
+              type: "uint8",
+            },
+          ],
+          name: "betsPerCandidate",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+            {
+              internalType: "enum YourContract.Side",
+              name: "",
+              type: "uint8",
+            },
+          ],
+          name: "betsPerGambler",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "electionFinished",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "oracle",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "enum YourContract.Side",
+              name: "_winner",
+              type: "uint8",
+            },
+            {
+              internalType: "enum YourContract.Side",
+              name: "_loser",
+              type: "uint8",
+            },
+          ],
+          name: "report",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "result",
+          outputs: [
+            {
+              internalType: "enum YourContract.Side",
+              name: "winner",
+              type: "uint8",
+            },
+            {
+              internalType: "enum YourContract.Side",
+              name: "loser",
+              type: "uint8",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "withdraw",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ],
+      inheritedFunctions: {},
+    },
+  },
+} as const;
 
 export default deployedContracts satisfies GenericContractsDeclaration;
